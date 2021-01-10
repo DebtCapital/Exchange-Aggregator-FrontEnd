@@ -1,0 +1,28 @@
+{
+  "name": "Aggregator-FrontEnd",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt-ts",
+    "build": "nuxt-ts build",
+    "start": "nuxt-ts start",
+    "generate": "nuxt-ts generate"
+  },
+  "dependencies": {
+    "@nuxt/typescript-runtime": "^2.0.0",
+    "core-js": "^3.6.5",
+    "fs": "0.0.1-security",
+    "net": "^1.0.2",
+    "nuxt": "^2.14.6",
+    "request-promise": "^4.2.6",
+    "sass-loader": "^10.1.0",
+    "tls": "0.0.1",
+    "vue-class-component": "^7.2.6",
+    "vue-property-decorator": "^9.1.2"
+  },
+  "devDependencies": {
+    "@nuxt/types": "^2.14.6",
+    "@nuxt/typescript-build": "^2.0.3",
+    "@nuxtjs/tailwindcss": "^3.1.0"
+  }
+}
