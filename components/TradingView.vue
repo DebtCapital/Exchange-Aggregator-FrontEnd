@@ -20,9 +20,9 @@ declare const TradingView: any;
 export default class TradingViewComponent extends Vue {
   @Prop({ type: Number, required: true }) readonly instance!: number;
   chart: any = null;
-  base: string = "BTC";
-  quote: string = "USDT";
-  exchange: string = "BINANCE";
+  base: string = "XBT";
+  quote: string = "USD";
+  exchange: string = "BITMEX";
   bars: Array<Bar> = [];
 
   mounted() {

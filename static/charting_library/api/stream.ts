@@ -56,7 +56,9 @@ export function subscribeOnStream(
   const channelString: string = createChannelString(symbolInfo);
 
   if (symbolInfo.ticker) {
-    subscribe(symbolInfo, 1);
+    const res: number = Number(resolution.replace("S", ""));
+    console.log(resolution, res);
+    subscribe(symbolInfo, res);
   }
   const newSub: Sub = {
     channelString,
