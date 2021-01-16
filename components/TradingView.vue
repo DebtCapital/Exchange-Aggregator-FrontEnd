@@ -11,8 +11,10 @@ import {
   ShapePoint,
   ThemeName,
   PricedPoint,
-  Bar
+  Bar,
+  IChartWidgetApi
 } from "@/static/charting_library/charting_library.min";
+//import {penis} from "plugins/penis"
 import Datafeed from "static/charting_library/api/index";
 declare const TradingView: any;
 
@@ -24,7 +26,10 @@ export default class TradingViewComponent extends Vue {
   quote: string = "USD";
   exchange: string = "BITMEX";
   bars: Array<Bar> = [];
-
+  drawbook(){
+    console.log('i niggers\n\n\n\n\n')
+    
+  }
   mounted() {
     const chart: IChartingLibraryWidget = new widget({
       fullscreen: false,
@@ -52,6 +57,16 @@ export default class TradingViewComponent extends Vue {
       ]
     });
     this.chart = chart;
+    this.chart.onChartReady(() => {
+      var order = chart.chart().createOrderLine({})
+              .setText("Buy Line")
+              .setLineLength(3) 
+              .setLineStyle(0) 
+              .setQuantity("221.235 USDT")   
+              .setPrice(37700)
+    })
+    /*setTimeout(() => {     */
+
   }
 }
 </script>
