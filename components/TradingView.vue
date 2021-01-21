@@ -14,70 +14,137 @@ import {
   IChartWidgetApi,
   IPositionLineAdapter
 } from "@/static/charting_library/charting_library.min";
-//import {penis} from "plugins/penis"
 import Datafeed from "static/charting_library/api/index";
 declare const TradingView: any;
 
+// Da bus
+import { EventBus } from '../static/globalbus.js';
 @Component
 export default class TradingViewComponent extends Vue {
   @Prop({ type: Number, required: true }) readonly instance!: number;
   chart: any = null;
-  base: string = "XBT";
-  quote: string = "USD";
-  exchange: string = "BITMEX";
+  base: string = "BTC";
+  quote: string = "USDT";
+  exchange: string = "BINANCE";
   bars: Array<Bar> = [];
+
+  /// key: price, value: object containing rectangle lines: right,left,top,bottom
+  shapes: Record<number,any> = []
   shape: any = {};
   start_time: number = 0;
-  drawbook(){
-    console.log('i niggers\n\n\n\n\n')
-    
+
+  /// Deletes one shape
+  clearShape(price: number){
+    this.chart.activeChart().removeEntity(this.shapes[price].left)
+    this.chart.activeChart().removeEntity(this.shapes[price].right)
+    this.chart.activeChart().removeEntity(this.shapes[price].top)
+    this.chart.activeChart().removeEntity(this.shapes[price].bottom)
+    delete this.shapes[price]
   }
-  drawshit(price: number){
+  /// Delete all rectangles/shapes
+  clearShapes(){
+
+    // We cannot use
+    //    removeAllShapes(): void;
+    // because this will also remove the user-supplied drawings
+    // which would be fucking gay
+
+    Object.keys(this.shapes).forEach((element: any) =>{
+      console.log("clearshapes: ", this.shapes[element])
+      this.clearShape(element); 
+    })
+  }
+
+  /// Create a rectandle at a specified price with a specified width/precision
+  createShape(price: number, precision: number){
+    // We assume the precision is global
+
+    // Exit if this shape exists
+    if(this.shapes[price]){
+      return;
+    }
     try{
+
+      // This aids ass piece of shit errors out if the grid isnt loaded, so i need to try catch it
       var end_time = new Date().getTime()/1000
+      var L = this.chart.activeChart().createMultipointShape([ {price, time: this.start_time}, {price: price-precision, time:this.start_time}], {shape: "trend_line", lock: true, disableSelection: true})
 
-      
-      if(Object.keys(this.shape).length === 0 && this.shape.constructor === Object){
-        // left border
-        var L = this.chart.chart(0).createMultipointShape([ {price, time: this.start_time}, {price: price-50, time:this.start_time}], {shape: "trend_line", lock: true, disableSelection: true})
+      // Bottom border
+      var B = this.chart.activeChart().createMultipointShape([ {price: price-precision, time:this.start_time}, {price: price-precision, time:end_time}], {shape: "trend_line", lock: true, disableSelection: true})
 
-        // bottom border
-        var B = this.chart.chart(0).createMultipointShape([ {price: price-50, time:this.start_time}, {price: price-50, time:end_time}], {shape: "trend_line", lock: true, disableSelection: true})
+      // Top border
+      var T = this.chart.activeChart().createMultipointShape([ {price: price, time:this.start_time},  {price: price, time:end_time}], {shape: "trend_line", lock: true, disableSelection: true})
 
-        // top border
-        var T = this.chart.chart(0).createMultipointShape([ {price: price, time:this.start_time},  {price: price, time:end_time}], {shape: "trend_line", lock: true, disableSelection: true})
+      // Right border
+      var R = this.chart.activeChart().createMultipointShape([ {price, time: end_time}, {price: price-precision, time:end_time}], {shape: "trend_line", lock: true, disableSelection: true})
 
-        // right border
-        var R = this.chart.chart(0).createMultipointShape([ {price, time: end_time}, {price: price-50, time:end_time}], {shape: "trend_line", lock: true, disableSelection: true})
+      // This will be undefined if the chart has not loaded the grid yet or the drawing has failed ;(
+      if(L != undefined && T != undefined &&B != undefined &&R != undefined ){
+        var shape = {left: L, right: R, top: T, bottom: B}
 
-        if(L != undefined && T != undefined &&B != undefined &&R != undefined ){
-          this.shape = {left: L, right: R, top: T, bottom: B}
-          
-          console.log(JSON.stringify(this.shape), Object.keys(this.shape).length, this.shape.top)
-        }
-      }
-      else{
-        // bottom
-        console.log(Object.keys(this.shape).length)
-        var points = this.chart.chart(0).getShapeById(this.shape.bottom).getPoints();
-        points[1] = {price: points[0].price, time: end_time}
-        this.chart.chart(0).getShapeById(this.shape.bottom).setPoints(points);
+        this.shapes[price] = shape;
+        
+      }   
+    }
+    catch(e){
+      console.log("createShape error drawing this, prob not loaded yet")
+    }
+  }
+  // Moves the right side of the box up to the newest candle body.
+  redraw(price: number){
+    var end_time = new Date().getTime()/1000
+    try{
+      // Check if we didnt get deleted before drawing
+      if(this.shapes[price]){
+          // bottom
+          var points = this.chart.chart(0).getShapeById(this.shapes[price].bottom).getPoints();
+          points[1] = {price: points[0].price, time: end_time}
+          this.chart.chart(0).getShapeById(this.shapes[price].bottom).setPoints(points);
 
-        // top
-        var points = this.chart.chart(0).getShapeById(this.shape.top).getPoints();
-        points[1] = {price: points[0].price, time: end_time}
-        this.chart.chart(0).getShapeById(this.shape.top).setPoints(points);
+          // top
+          var points = this.chart.chart(0).getShapeById(this.shapes[price].top).getPoints();
+          points[1] = {price: points[0].price, time: end_time}
+          this.chart.chart(0).getShapeById(this.shapes[price].top).setPoints(points);
 
-        // right side
-        var points = this.chart.chart(0).getShapeById(this.shape.right).getPoints();
-        points = [{price: points[0].price, time: end_time},{price: points[1].price, time: end_time}]
-        this.chart.chart(0).getShapeById(this.shape.right).setPoints(points);
+          // right side
+          var points = this.chart.chart(0).getShapeById(this.shapes[price].right).getPoints();
+          points = [{price: points[0].price, time: end_time},{price: points[1].price, time: end_time}]
+          this.chart.chart(0).getShapeById(this.shapes[price].right).setPoints(points);
       }
     }
     catch(e){
-      //console.error("NIGGERNIGGERNIGGERNIGGERNIGGER", e)
+      console.log("redraw error, prob not loaded")
     }
   }
+
+  redrawAll(){
+    Object.keys(this.shapes).forEach((element: any)=>{
+      this.redraw(element);
+    })
+  }
+  drawityounigger(bookside: any){
+    bookside.forEach((element: any) => {
+      var price = element.startPrice;
+      var size = element.size;
+      var endprice = element.endPrice;
+
+      // for now i will assume that endprice != 0, but it is when the book isn't aggregated lol
+      //precision is the difference between 
+      // TODO on server side
+      this.createShape(price, Math.abs(endprice - price))
+
+    });
+  }
+
+  bookDrawer(book: any){
+    if(book['buy']){
+      this.drawityounigger(book['buy'])
+    }
+    if(book['sell']){
+      this.drawityounigger(book['sell'])
+    }
+  }
+
   mounted() {
     const chart: IChartingLibraryWidget = new widget({
       fullscreen: false,
@@ -105,20 +172,15 @@ export default class TradingViewComponent extends Vue {
       ]
     });
     this.chart = chart;
+    
     this.start_time = new Date().getTime()/1000;
-    this.chart.onChartReady(() => {
-      //chart.selectLineTool("trend_line");
-      setInterval(() => {
-        var price = 36300
-        this.drawshit(price);
-
-      }, 1000);
-
-
-        
-    })
-    /*setTimeout(() => {     */
-
+    EventBus.$on('bar', (bar: any) => {
+      var price = 36300
+      this.redrawAll()
+    });
+    EventBus.$on('book', (book: any) => {
+      this.bookDrawer(book);
+    });
   }
 }
 </script>

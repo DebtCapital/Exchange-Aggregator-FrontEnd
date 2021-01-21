@@ -5,7 +5,7 @@ import {
   SearchSymbolResultItem,
   SubscribeBarsCallback
 } from "../charting_library.min";
-
+import { EventBus } from '../../globalbus.js';
 const socket: WebSocket = new WebSocket("ws://localhost:4000");
 
 const _subs: Array<Sub> = [];
@@ -96,6 +96,7 @@ function onOHLCV(data: any, sub: Sub) {
     volume: data.Volume
   };
   if (sub.lastBar && data.ts < sub.lastBar.time / 1000) return;
+  EventBus.$emit('bar', bar);
   console.log(bar);
   sub.listener(bar);
   sub.lastBar = bar;
@@ -104,6 +105,9 @@ socket.onmessage = message => {
   const { data, source, channel } = JSON.parse(message.data);
   console.log(channel, source, data);
   switch (channel) {
+    case "BOOKS":
+      EventBus.$emit('book', data);
+      break;
     case "OHLCV":
       const sub = _subs.find(e => e.channelString === source.toUpperCase());
       console.log(sub, _subs);
