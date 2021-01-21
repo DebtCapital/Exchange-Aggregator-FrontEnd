@@ -97,19 +97,19 @@ export default class TradingViewComponent extends Vue {
       // Check if we didnt get deleted before drawing
       if(this.shapes[price]){
           // bottom
-          var points = this.chart.chart(0).getShapeById(this.shapes[price].bottom).getPoints();
+          var points = this.chart.activeChart().getShapeById(this.shapes[price].bottom).getPoints();
           points[1] = {price: points[0].price, time: end_time}
-          this.chart.chart(0).getShapeById(this.shapes[price].bottom).setPoints(points);
+          this.chart.activeChart().getShapeById(this.shapes[price].bottom).setPoints(points);
 
           // top
-          var points = this.chart.chart(0).getShapeById(this.shapes[price].top).getPoints();
+          var points = this.chart.activeChart().getShapeById(this.shapes[price].top).getPoints();
           points[1] = {price: points[0].price, time: end_time}
-          this.chart.chart(0).getShapeById(this.shapes[price].top).setPoints(points);
+          this.chart.activeChart().getShapeById(this.shapes[price].top).setPoints(points);
 
           // right side
-          var points = this.chart.chart(0).getShapeById(this.shapes[price].right).getPoints();
+          var points = this.chart.activeChart().getShapeById(this.shapes[price].right).getPoints();
           points = [{price: points[0].price, time: end_time},{price: points[1].price, time: end_time}]
-          this.chart.chart(0).getShapeById(this.shapes[price].right).setPoints(points);
+          this.chart.activeChart().getShapeById(this.shapes[price].right).setPoints(points);
       }
     }
     catch(e){
