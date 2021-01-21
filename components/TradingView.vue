@@ -24,8 +24,8 @@ export default class TradingViewComponent extends Vue {
   @Prop({ type: Number, required: true }) readonly instance!: number;
   chart: any = null;
   base: string = "BTC";
-  quote: string = "USDT";
-  exchange: string = "BINANCE";
+  quote: string = "USD";
+  exchange: string = "BYBIT";
   bars: Array<Bar> = [];
 
   /// key: price, value: object containing rectangle lines: right,left,top,bottom
@@ -57,6 +57,7 @@ export default class TradingViewComponent extends Vue {
 
   /// Create a rectandle at a specified price with a specified width/precision
   createShape(price: number, precision: number){
+    console.log("CREATESHAPE\n\n\n\n\n\n")
     // We assume the precision is global
 
     // Exit if this shape exists
@@ -137,6 +138,7 @@ export default class TradingViewComponent extends Vue {
   }
 
   bookDrawer(book: any){
+    console.log("BOOKDRAWER\n\n\n\n\n")
     if(book['buy']){
       this.drawityounigger(book['buy'])
     }
@@ -179,6 +181,7 @@ export default class TradingViewComponent extends Vue {
       this.redrawAll()
     });
     EventBus.$on('book', (book: any) => {
+      console.error("BOOK")
       this.bookDrawer(book);
     });
   }

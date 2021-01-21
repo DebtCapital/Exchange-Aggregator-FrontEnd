@@ -32,6 +32,15 @@ function subscribe(symbolInfo: LibrarySymbolInfo, timeframe: number) {
         timeframe
       }
     });
+    emit({
+      command: "SUBSCRIBE",
+      channel: "BOOKS",
+      data: {
+        exchange: symbolInfo.exchange,
+        pair: symbolInfo.ticker,
+        precision: 100
+      }
+    });
   }
 }
 export function searchSymbols(
