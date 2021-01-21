@@ -35,12 +35,14 @@ export default class TradingViewComponent extends Vue {
 
   /// Deletes one shape
   clearShape(price: number){
+    //console.log("CLEARSHAPE\n\n\n\n")
     this.chart.activeChart().removeEntity(this.shapes[price].left)
     this.chart.activeChart().removeEntity(this.shapes[price].right)
     this.chart.activeChart().removeEntity(this.shapes[price].top)
     this.chart.activeChart().removeEntity(this.shapes[price].bottom)
     delete this.shapes[price]
   }
+
   /// Delete all rectangles/shapes
   clearShapes(){
 
@@ -62,7 +64,9 @@ export default class TradingViewComponent extends Vue {
 
     // Exit if this shape exists
     if(this.shapes[price]){
-      return;
+            console.log("exists")
+
+      return -1;
     }
     try{
 
@@ -84,11 +88,13 @@ export default class TradingViewComponent extends Vue {
         var shape = {left: L, right: R, top: T, bottom: B}
 
         this.shapes[price] = shape;
-        
-      }   
+        return 0;
+      } 
+      return 1;  
     }
     catch(e){
       console.log("createShape error drawing this, prob not loaded yet")
+      return 1;
     }
   }
   // Moves the right side of the box up to the newest candle body.
@@ -124,6 +130,8 @@ export default class TradingViewComponent extends Vue {
     })
   }
   drawityounigger(bookside: any){
+    console.log("drawityounigger")
+    var sized: Array<any> = []
     bookside.forEach((element: any) => {
       var price = element.startPrice;
       var size = element.size;
@@ -132,13 +140,32 @@ export default class TradingViewComponent extends Vue {
       // for now i will assume that endprice != 0, but it is when the book isn't aggregated lol
       //precision is the difference between 
       // TODO on server side
-      this.createShape(price, Math.abs(endprice - price))
-
+      if(size > 1000000){
+        sized.push(price);
+        console.log("drawing", price, size)
+        
+        this.createShape(price, Math.abs(endprice - price))
+      }
     });
+
+    
+    var notThere = Object.keys(this.shapes).filter((element: any) =>
+      !sized.includes(parseInt(element))
+    )
+    console.log("deleting: ", notThere, sized, bookside)
+    // if(notThere.length > 0){
+    //   console.log("deleting: ", notThere, sized, bookside)
+    //   notThere.forEach((element: any)=>{
+    //     this.clearShape(element)
+    //     console.log(element, bookside[element], this.shapes[element])
+    //   })
+    // }
+     notThere.forEach((element: any)=>{
+       this.clearShape(element)
+     })
   }
 
   bookDrawer(book: any){
-    console.log("BOOKDRAWER\n\n\n\n\n")
     if(book['buy']){
       this.drawityounigger(book['buy'])
     }
@@ -181,7 +208,7 @@ export default class TradingViewComponent extends Vue {
       this.redrawAll()
     });
     EventBus.$on('book', (book: any) => {
-      console.error("BOOK")
+      //console.error("BOOK")
       this.bookDrawer(book);
     });
   }

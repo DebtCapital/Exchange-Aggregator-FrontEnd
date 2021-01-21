@@ -66,7 +66,7 @@ export function subscribeOnStream(
 
   if (symbolInfo.ticker) {
     const res: number = Number(resolution.replace("S", ""));
-    console.log(resolution, res);
+    //console.log(resolution, res);
     subscribe(symbolInfo, res);
   }
   const newSub: Sub = {
@@ -94,7 +94,7 @@ export function unsubscribeFromStream(listenerGuid: string) {
 }
 
 function onOHLCV(data: any, sub: Sub) {
-  console.log(data);
+  //console.log(data);
   if (data.Open === null) return;
   const bar: Bar = {
     time: data.Timestamp,
@@ -106,20 +106,20 @@ function onOHLCV(data: any, sub: Sub) {
   };
   if (sub.lastBar && data.ts < sub.lastBar.time / 1000) return;
   EventBus.$emit('bar', bar);
-  console.log(bar);
+  //console.log(bar);
   sub.listener(bar);
   sub.lastBar = bar;
 }
 socket.onmessage = message => {
   const { data, source, channel } = JSON.parse(message.data);
-  console.log(channel, source, data);
+  //console.log(channel, source, data);
   switch (channel) {
     case "BOOKS":
       EventBus.$emit('book', data);
       break;
     case "OHLCV":
       const sub = _subs.find(e => e.channelString === source.toUpperCase());
-      console.log(sub, _subs);
+      //console.log(sub, _subs);
       if (!sub) break;
       onOHLCV(data, sub);
       break;
